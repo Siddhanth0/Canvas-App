@@ -27,6 +27,7 @@ import androidx.compose.material3.SliderColors
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -42,7 +43,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -164,6 +167,7 @@ fun CustomColorPickerDialog(
     var saturation by remember { mutableFloatStateOf(1f) }
 
     var touchPosition by remember { mutableStateOf(Offset.Zero) }
+    var boxSize by remember { mutableStateOf(IntSize.Zero) }
 
     AlertDialog(
         onDismissRequest = onDismissRequest,
@@ -184,12 +188,15 @@ fun CustomColorPickerDialog(
                 Text("Cancel")
             }
         },
-        title = { Text(text = "Pick a Color", color = Color.White) },
+        title = { Text(text = "Pick a Colour", color = Color.White) },
         text = {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(200.dp)
+                    .onSizeChanged { size ->
+                        boxSize = size // Store the box size when available
+                    }
                     .pointerInput(Unit) {
                         detectDragGestures(
                             onDragStart = { offset ->
@@ -225,12 +232,19 @@ fun CustomColorPickerDialog(
                         )
 
                         drawCircle(
-                            color = Color.Black,
-                            radius = 10f,
+                            color = Color.White,
+                            radius = 20f,
                             center = touchPosition
                         )
                     }
             )
+            LaunchedEffect(boxSize) {
+                if (boxSize.width > 0 && boxSize.height > 0) {
+                    touchPosition = Offset(boxSize.width / 2f, boxSize.height / 2f)
+                    hue = 180f // Middle of the hue gradient (around cyan)
+                    saturation = 0.5f // Mid-saturation
+                }
+            }
         },
         shape = RoundedCornerShape(16.dp)
     )
