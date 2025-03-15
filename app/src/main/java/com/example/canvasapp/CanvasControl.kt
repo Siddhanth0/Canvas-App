@@ -1,5 +1,6 @@
 package com.example.canvasapp
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -40,6 +41,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -82,13 +85,13 @@ fun CanvasControls(
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)
-                        .background(Color.Gray)
                         .clickable { showColorPicker = true }
                 ) {
-                    Text(
-                        text = "+",
-                        color = Color.White,
-                        modifier = Modifier.align(Alignment.Center)
+                    Image(
+                        painter = painterResource(id = R.mipmap.color_picker),
+                        contentDescription = null,
+                        modifier = Modifier.matchParentSize(),
+                        contentScale = ContentScale.Crop
                     )
                 }
             }
