@@ -14,13 +14,14 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.util.fastForEach
 import kotlin.math.abs
 
 @Composable
 fun DrawingCanvas(
     paths: List<PathData>,
     currentPath: PathData?,
+    brushSize: Float,
+    selectedColor: Color,
     onAction: (DrawingAction) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -30,23 +31,25 @@ fun DrawingCanvas(
             .background(Color.White)
             .pointerInput(true) {
                 detectDragGestures(
-                    onDragStart = { onAction(DrawingAction.onNewPathStart) },
-                    onDragEnd = { onAction(DrawingAction.onPathEnd) },
-                    onDrag = { change, _ -> onAction(DrawingAction.onDraw(change.position)) },
-                    onDragCancel = { onAction(DrawingAction.onPathEnd) }
+                    onDragStart = { onAction(DrawingAction.OnNewPathStart(selectedColor, brushSize)) },
+                    onDragEnd = { onAction(DrawingAction.OnPathEnd) },
+                    onDrag = { change, _ -> onAction(DrawingAction.OnDraw(change.position)) },
+                    onDragCancel = { onAction(DrawingAction.OnPathEnd) }
                 )
             }
     ) {
-        paths.fastForEach { pathData ->
+        paths.forEach { pathData ->
             drawPath(
                 path = pathData.path,
-                color = pathData.color
+                color = pathData.color,
+                thickness = pathData.brushSize
             )
         }
         currentPath?.let {
             drawPath(
                 path = it.path,
-                color = it.color
+                color = it.color,
+                thickness = it.brushSize
             )
         }
     }
@@ -55,22 +58,22 @@ fun DrawingCanvas(
 private fun DrawScope.drawPath(
     path: List<Offset>,
     color: Color,
-    thickness: Float = 10f
+    thickness: Float
 ) {
     val smoothedPath = Path().apply {
-        if(path.isNotEmpty()) {
+        if (path.isNotEmpty()) {
             moveTo(path.first().x, path.first().y)
 
             val smoothness = 5
-            for (i in 1.. path.lastIndex){
-                val from = path[i-1]
+            for (i in 1..path.lastIndex) {
+                val from = path[i - 1]
                 val to = path[i]
                 val dx = abs(from.x - to.x)
                 val dy = abs(from.y - to.y)
-                if(dx >= smoothness || dy >= smoothness) {
-                    quadraticBezierTo(
-                        x1 = (from.x + to.x)/ 2f,
-                        y1 = (from.y + to.y)/2f,
+                if (dx >= smoothness || dy >= smoothness) {
+                    quadraticTo(
+                        x1 = (from.x + to.x) / 2f,
+                        y1 = (from.y + to.y) / 2f,
                         x2 = to.x,
                         y2 = to.y
                     )

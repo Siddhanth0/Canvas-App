@@ -3,7 +3,6 @@ package com.example.canvasapp
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,7 +18,6 @@ import com.example.canvasapp.ui.theme.CanvasAppTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
             CanvasAppTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
@@ -35,6 +33,8 @@ class MainActivity : ComponentActivity() {
                         DrawingCanvas(
                             paths = state.paths,
                             currentPath = state.currentPath,
+                            selectedColor = state.selectedColor,
+                            brushSize = state.selectedBrushSize,
                             onAction = viewModel::onAction,
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -42,12 +42,14 @@ class MainActivity : ComponentActivity() {
                         )
                         CanvasControls(
                             selectedColor = state.selectedColor,
+                            selectedBrushSize = state.selectedBrushSize,
                             colors = allColors,
                             onSelectColor = {
-                                viewModel.onAction(DrawingAction.onSelectColor(it))
+                                viewModel.onAction(DrawingAction.OnSelectColor(it))
                             },
+                            onBrushSizeChange = { viewModel.onAction(DrawingAction.OnBrushSizeChange(it)) },
                             onClearCanvas = {
-                                viewModel.onAction(DrawingAction.onClearCanvas)
+                                viewModel.onAction(DrawingAction.OnClearCanvas)
                             }
                         )
                     }

@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.update
 
 data class DrawingState(
     val selectedColor: Color = Color.Black,
+    val selectedBrushSize: Float = 10f, // Added brush size
     val currentPath: PathData? = null,
     val paths: List<PathData> = emptyList()
 )
@@ -26,39 +27,45 @@ val allColors = listOf(
 data class PathData(
     val id: String,
     val color: Color,
+    val brushSize: Float,
     val path: List<Offset>
 )
 
 sealed interface DrawingAction {
-    data object onNewPathStart: DrawingAction
-    data class onDraw(val offset: Offset): DrawingAction
-    data object onPathEnd: DrawingAction
-    data class onSelectColor(val color: Color): DrawingAction
-    data object onClearCanvas: DrawingAction
+    data class OnNewPathStart(val color: Color, val brushSize: Float) : DrawingAction
+    data class OnDraw(val offset: Offset) : DrawingAction
+    data object OnPathEnd : DrawingAction
+    data class OnSelectColor(val color: Color) : DrawingAction
+    data object OnClearCanvas : DrawingAction
+    data class OnBrushSizeChange(val size: Float) : DrawingAction
 }
 
-class DrawingViewModel: ViewModel() {
+class DrawingViewModel : ViewModel() {
     private val _state = MutableStateFlow(DrawingState())
     val state = _state.asStateFlow()
 
     fun onAction(action: DrawingAction) {
-        when(action) {
-            DrawingAction.onClearCanvas -> onClearCanvas()
-            is DrawingAction.onDraw -> onDraw(action.offset)
-            DrawingAction.onNewPathStart -> onNewPathStart()
-            DrawingAction.onPathEnd -> onPathEnd()
-            is DrawingAction.onSelectColor -> onSelectColor(action.color)
+        when (action) {
+            DrawingAction.OnClearCanvas -> onClearCanvas()
+            is DrawingAction.OnDraw -> onDraw(action.offset)
+            is DrawingAction.OnNewPathStart -> onNewPathStart()
+            DrawingAction.OnPathEnd -> onPathEnd()
+            is DrawingAction.OnSelectColor -> onSelectColor(action.color)
+            is DrawingAction.OnBrushSizeChange -> onBrushSizeChange(action.size)
         }
     }
 
     private fun onNewPathStart() {
-        _state.update { it.copy(
-            currentPath = PathData(
-                id = System.currentTimeMillis().toString(),
-                color = it.selectedColor,
-                path = emptyList()
+        _state.update { state ->
+            state.copy(
+                currentPath = PathData(
+                    id = System.currentTimeMillis().toString(),
+                    color = state.selectedColor,
+                    brushSize = state.selectedBrushSize,
+                    path = emptyList()
+                )
             )
-        ) }
+        }
     }
 
     private fun onClearCanvas() {
@@ -91,4 +98,9 @@ class DrawingViewModel: ViewModel() {
         ) }
     }
 
+    private fun onBrushSizeChange(size: Float) {
+        _state.update { it.copy(
+            selectedBrushSize = size
+        ) }
+    }
 }
