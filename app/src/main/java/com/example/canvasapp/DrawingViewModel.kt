@@ -56,12 +56,11 @@ class DrawingViewModel : ViewModel() {
     }
 
     private fun onNewPathStart() {
-        _state.update { state ->
-            state.copy(
+        _state.update { it.copy(
                 currentPath = PathData(
                     id = System.currentTimeMillis().toString(),
-                    color = state.selectedColor,
-                    brushSize = state.selectedBrushSize,
+                    color = it.selectedColor,
+                    brushSize = it.selectedBrushSize,
                     path = emptyList()
                 )
             )
